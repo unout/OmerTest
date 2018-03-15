@@ -19,4 +19,13 @@ public class MainActivity extends AppCompatActivity {
                 .replace(R.id.fragment_container, new ItemsListFragment())
                 .commit();
     }
+
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() >= 0) {
+            getFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }
+    }
 }

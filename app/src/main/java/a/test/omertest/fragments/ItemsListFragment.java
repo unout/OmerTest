@@ -30,6 +30,7 @@ public class ItemsListFragment extends Fragment implements IView, SwipeRefreshLa
     private Context mContext;
     private IPresenter feedPresenter;
     private RecyclerView mRecyclerView;
+    private RealmResults<FeedItem> items;
 
     public ItemsListFragment() {
     }
@@ -77,15 +78,21 @@ public class ItemsListFragment extends Fragment implements IView, SwipeRefreshLa
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_items_list, container, false);
         mRecyclerView = v.findViewById(R.id.mRVItemsList);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         return v;
     }
 
     @Override
-    public void showItems(RealmResults<FeedItem> items) {
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+    public void onResume() {
+        super.onResume();
+        if (items != null && items.size() > 0) showItems(items);
+    }
 
+    @Override
+    public void showItems(RealmResults<FeedItem> items) {
+        this.items = items;
         ItemsListAdapter listAdapter = new ItemsListAdapter(
                 mContext,
                 items,
