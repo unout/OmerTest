@@ -20,7 +20,7 @@ import a.test.omertest.IView;
 import a.test.omertest.R;
 import a.test.omertest.adapters.ItemsListAdapter;
 import a.test.omertest.model.FeedItem;
-import a.test.omertest.support.NetworkUtils;
+import a.test.omertest.support.AndroidResolver;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
@@ -67,14 +67,10 @@ public class ItemsListFragment extends Fragment implements IView, SwipeRefreshLa
         Realm.init(getActivity());
         Realm.setDefaultConfiguration(new RealmConfiguration.Builder().build());
 
-        feedPresenter = new FeedPresenter(Realm.getDefaultInstance());
+        feedPresenter = new FeedPresenter(
+                Realm.getDefaultInstance(),
+                new AndroidResolver(getActivity()));
         feedPresenter.attachView(this);
-
-        if (!NetworkUtils.isOnline(getActivity())) {
-            networkError();
-        } else {
-            feedPresenter.loadFeed();
-        }
     }
 
     @Override
@@ -85,8 +81,7 @@ public class ItemsListFragment extends Fragment implements IView, SwipeRefreshLa
     }
 
     @Override
-    public void showItems() {
-        final RealmResults<FeedItem> items = feedPresenter.getItems();
+    public void showItems(RealmResults<FeedItem> items) {
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
@@ -108,21 +103,17 @@ public class ItemsListFragment extends Fragment implements IView, SwipeRefreshLa
     }
 
     @Override
-    public void networkError() {
+    public void showErrorToast() {
         Toast.makeText(mContext, "Network Error", Toast.LENGTH_LONG).show();
     }
 
     @Override
-    public void commonError() {
+    public void showCommonErrorToast() {
         Toast.makeText(mContext, "Common Error", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onRefresh() {
-        if (!NetworkUtils.isOnline(getActivity())) {
-            networkError();
-        } else {
-            feedPresenter.refresh();
-        }
+        feedPresenter.refreshLayoutPulled();
     }
 }

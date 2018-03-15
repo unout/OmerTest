@@ -13,11 +13,7 @@ public interface IPresenter {
 
     void loadFeed();
 
-    void refresh();
+    void refreshLayoutPulled();
 
     RealmResults<FeedItem> getItems();
-
-    interface Resolver {
-        boolean isNetworkAvailable();
-    }
 }

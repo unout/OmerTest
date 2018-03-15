@@ -38,6 +38,6 @@ public class OverviewSwipeRefreshLayout extends SwipeRefreshLayout {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         super.onTouchEvent(ev);
-        return false;
+        return super.onTouchEvent(ev);
     }
 }

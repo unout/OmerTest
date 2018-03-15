@@ -12,4 +12,6 @@ public interface IModel {
     void clear();
 
     void saveFeed(Response<Feed> feedResponse);
+
+    boolean isOnline();
 }

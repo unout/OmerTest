@@ -19,8 +19,8 @@ public class FeedPresenter implements IPresenter {
     private IView view;
     private IModel model;
 
-    public FeedPresenter(Realm realm) {
-        model = new Model(realm);
+    public FeedPresenter(Realm realm, Resolver resolver) {
+        model = new Model(realm, resolver);
     }
 
     @Override
@@ -31,6 +31,7 @@ public class FeedPresenter implements IPresenter {
     @Override
     public void attachView(IView view) {
         this.view = view;
+        loadFeed();
     }
 
     @Override
@@ -40,25 +41,29 @@ public class FeedPresenter implements IPresenter {
 
     @Override
     public void loadFeed() {
-        Retrofit restAdapter = new Retrofit.Builder()
-                .baseUrl(Constants.BASE_URL)
-                .addConverterFactory(SimpleXmlConverterFactory.create())
-                .build();
+        if (model.isOnline()) {
+            setInitFinished(Constants.CODE_NETWORK_ERROR);
+        } else {
+            Retrofit restAdapter = new Retrofit.Builder()
+                    .baseUrl(Constants.BASE_URL)
+                    .addConverterFactory(SimpleXmlConverterFactory.create())
+                    .build();
 
-        Service service = restAdapter.create(Service.class);
-        Call<Feed> call = service.getFeed();
-        call.enqueue(new Callback<Feed>() {
-            @Override
-            public void onResponse(@NonNull Call<Feed> call, @NonNull Response<Feed> response) {
-                model.saveFeed(response);
-                setInitFinished(Constants.CODE_SUCCESS);
-            }
+            Service service = restAdapter.create(Service.class);
+            Call<Feed> call = service.getFeed();
+            call.enqueue(new Callback<Feed>() {
+                @Override
+                public void onResponse(@NonNull Call<Feed> call, @NonNull Response<Feed> response) {
+                    model.saveFeed(response);
+                    setInitFinished(Constants.CODE_SUCCESS);
+                }
 
-            @Override
-            public void onFailure(@NonNull Call<Feed> call, @NonNull Throwable t) {
-                setInitFinished(Constants.CODE_COMMON_ERROR);
-            }
-        });
+                @Override
+                public void onFailure(@NonNull Call<Feed> call, @NonNull Throwable t) {
+                    setInitFinished(Constants.CODE_COMMON_ERROR);
+                }
+            });
+        }
     }
 
     public RealmResults<FeedItem> getItems() {
@@ -66,14 +71,20 @@ public class FeedPresenter implements IPresenter {
     }
 
     private void setInitFinished(int resultCode) {
-        if (resultCode == Constants.CODE_SUCCESS) view.showItems();
-        if (resultCode == Constants.CODE_NETWORK_ERROR) view.networkError();
-        if (resultCode == Constants.CODE_COMMON_ERROR) view.commonError();
+        if (view != null) {
+            if (resultCode == Constants.CODE_SUCCESS) view.showItems(getItems());
+            if (resultCode == Constants.CODE_NETWORK_ERROR) view.showErrorToast();
+            if (resultCode == Constants.CODE_COMMON_ERROR) view.showCommonErrorToast();
+        }
     }
 
     @Override
-    public void refresh() {
+    public void refreshLayoutPulled() {
         model.clear();
         loadFeed();
+    }
+
+    public interface Resolver {
+        boolean isNetworkAvailable();
     }
 }

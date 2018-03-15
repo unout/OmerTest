@@ -10,9 +10,11 @@ import retrofit2.Response;
 public class Model implements IModel {
 
     private Realm realm;
+    private FeedPresenter.Resolver resolver;
 
-    public Model(Realm realm) {
+    public Model(Realm realm, FeedPresenter.Resolver resolver) {
         this.realm = realm;
+        this.resolver = resolver;
     }
 
     @Override
@@ -39,6 +41,8 @@ public class Model implements IModel {
         }
     }
 
-    public void isNetworkAvailable() {
+    @Override
+    public boolean isOnline() {
+        return resolver.isNetworkAvailable();
     }
 }

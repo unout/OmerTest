@@ -21,6 +21,9 @@ public class FeedItem extends RealmObject {
 
     @Element(name = "description")
     private String description;
+   // TODO
+//    @Element(name = "img")
+//    private String img;
 
     public String getPubDate() {
         return pubDate;
