@@ -14,9 +14,9 @@ public class ItemViewHolder extends com.thoughtbot.expandablerecyclerview.viewho
 
     public ItemViewHolder(View itemView) {
         super(itemView);
-        pubDate = itemView.findViewById(R.id.tvTitle);
-        title = itemView.findViewById(R.id.tvLink);
-        link = itemView.findViewById(R.id.tvPubDate);
+        pubDate = itemView.findViewById(R.id.tvPubDate);
+        title = itemView.findViewById(R.id.tvTitle);
+        link = itemView.findViewById(R.id.tvLink);
         description = itemView.findViewById(R.id.tvDescription);
     }
 
