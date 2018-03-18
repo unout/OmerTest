@@ -3,15 +3,14 @@ package a.test.omertest.model;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
-import io.realm.RealmObject;
-
 @Root(name = "item", strict = false)
-public class FeedItem extends RealmObject {
-    @Element(name = "pubDate")
-    private String pubDate;
+public class FeedItem {
 
     @Element(name = "title")
     private String title;
+
+    @Element(name = "pubDate")
+    private String pubDate;
 
     @Element(name = "guid")
     private String guid;
@@ -21,9 +20,6 @@ public class FeedItem extends RealmObject {
 
     @Element(name = "description")
     private String description;
-   // TODO
-//    @Element(name = "img")
-//    private String img;
 
     public String getPubDate() {
         return pubDate;
@@ -40,4 +36,9 @@ public class FeedItem extends RealmObject {
     public String getDescription() {
         return description;
     }
+
+    public String getGuid() {
+        return guid;
+    }
+
 }

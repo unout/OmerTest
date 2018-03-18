@@ -2,12 +2,11 @@ package a.test.omertest;
 
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
+import a.test.omertest.model.AppDatabase;
 import a.test.omertest.model.Feed;
-import a.test.omertest.model.FeedItem;
 import a.test.omertest.support.Constants;
-import io.realm.Realm;
-import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -19,8 +18,8 @@ public class FeedPresenter implements IPresenter {
     private IView view;
     private IModel model;
 
-    public FeedPresenter(Realm realm, Resolver resolver) {
-        model = new Model(realm, resolver);
+    public FeedPresenter(AppDatabase db, Resolver resolver) {
+        model = new Model(db, resolver);
     }
 
     @Override
@@ -31,6 +30,8 @@ public class FeedPresenter implements IPresenter {
     @Override
     public void attachView(IView view) {
         this.view = view;
+        if (model.getItems() != null && model.getItems().size() > 0)
+            view.showItems(model.getItems());
         loadFeed();
     }
 
@@ -39,10 +40,9 @@ public class FeedPresenter implements IPresenter {
         view = null;
     }
 
-    @Override
-    public void loadFeed() {
+    private void loadFeed() {
         if (model.isOnline()) {
-            setInitFinished(Constants.CODE_NETWORK_ERROR);
+            setInitFinished(Constants.CODE_NETWORK_ERROR, null);
         } else {
             Retrofit restAdapter = new Retrofit.Builder()
                     .baseUrl(Constants.BASE_URL)
@@ -55,32 +55,28 @@ public class FeedPresenter implements IPresenter {
                 @Override
                 public void onResponse(@NonNull Call<Feed> call, @NonNull Response<Feed> response) {
                     model.saveFeed(response);
-                    setInitFinished(Constants.CODE_SUCCESS);
+                    setInitFinished(Constants.CODE_SUCCESS, null);
                 }
 
                 @Override
                 public void onFailure(@NonNull Call<Feed> call, @NonNull Throwable t) {
-                    setInitFinished(Constants.CODE_COMMON_ERROR);
+                    setInitFinished(Constants.CODE_COMMON_ERROR, t.toString());
+                    Log.e("FATAL EXCEPTION! : ", t.toString());
                 }
             });
         }
     }
 
-    public RealmResults<FeedItem> getItems() {
-        return model.getItems();
-    }
-
-    private void setInitFinished(int resultCode) {
+    private void setInitFinished(int resultCode, String log) {
         if (view != null) {
-            if (resultCode == Constants.CODE_SUCCESS) view.showItems(getItems());
-            if (resultCode == Constants.CODE_NETWORK_ERROR) view.showErrorToast();
-            if (resultCode == Constants.CODE_COMMON_ERROR) view.showCommonErrorToast();
+            if (resultCode == Constants.CODE_SUCCESS) view.showItems(model.getItems());
+            if (resultCode == Constants.CODE_NETWORK_ERROR) view.showNetworkErrorToast();
+            if (resultCode == Constants.CODE_COMMON_ERROR) view.showCommonErrorToast(log);
         }
     }
 
     @Override
     public void refreshLayoutPulled() {
-        model.clear();
         loadFeed();
     }
 

@@ -1,33 +1,31 @@
 package a.test.omertest.adapters;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import a.test.omertest.IPresenter;
 import a.test.omertest.R;
 import a.test.omertest.adapters.viewholders.ItemViewHolder;
-import a.test.omertest.model.FeedItem;
-import io.realm.RealmResults;
+import a.test.omertest.model.RoomItem;
 
 public class ItemsListAdapter extends RecyclerView.Adapter<ItemViewHolder> {
 
-    private LayoutInflater lInflater;
-    private RealmResults<FeedItem> feedItems;
+    private List<RoomItem> feedItems = new ArrayList<>();
     private IPresenter feedPresenter;
 
-    public ItemsListAdapter(Context context, RealmResults<FeedItem> feedItems, IPresenter feedPresenter) {
-        this.feedItems = feedItems;
-        lInflater = (LayoutInflater) context
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public ItemsListAdapter(IPresenter feedPresenter) {
         this.feedPresenter = feedPresenter;
     }
 
     @Override
     public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = lInflater.inflate(R.layout.view_rv_item, parent, false);
+        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+        View view = layoutInflater.inflate(R.layout.view_rv_item, parent, false);
         final ItemViewHolder viewHolder = new ItemViewHolder(view);
         view.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,4 +51,9 @@ public class ItemsListAdapter extends RecyclerView.Adapter<ItemViewHolder> {
         return position;
     }
 
+    public void addItems(List<RoomItem> items) {
+        feedItems.clear();
+        feedItems.addAll(items);
+        notifyDataSetChanged();
+    }
 }

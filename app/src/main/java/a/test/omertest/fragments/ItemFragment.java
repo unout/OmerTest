@@ -1,7 +1,6 @@
 package a.test.omertest.fragments;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.DragEvent;
@@ -12,16 +11,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import a.test.omertest.R;
-import a.test.omertest.model.FeedItem;
-import io.realm.Realm;
+import a.test.omertest.model.AppDatabase;
+import a.test.omertest.model.RoomItem;
 
 public class ItemFragment extends Fragment implements
-        SwipeRefreshLayout.OnRefreshListener,
         SwipeRefreshLayout.OnDragListener,
         SwipeRefreshLayout.OnTouchListener {
 
     private static final String ITEM_POSITION = "position";
-    private Context context;
 
     public ItemFragment() {
     }
@@ -35,12 +32,6 @@ public class ItemFragment extends Fragment implements
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.context = context;
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
@@ -51,7 +42,7 @@ public class ItemFragment extends Fragment implements
         if (getArguments() != null) {
             position = getArguments().getInt(ITEM_POSITION);
         }
-        final FeedItem item = Realm.getDefaultInstance().where(FeedItem.class).findAll().get(position);
+        final RoomItem item = AppDatabase.getDatabase(getActivity()).itemDAO().getAll().get(position);
         View v = inflater.inflate(R.layout.fragment_item, container, false);
         ((TextView) v.findViewById(R.id.tvTitle)).setText(item.getTitle());
         ((TextView) v.findViewById(R.id.tvPubDate)).setText(item.getPubDate());
@@ -60,10 +51,6 @@ public class ItemFragment extends Fragment implements
             ((TextView) v.findViewById(R.id.tvDescription)).setText(item.getDescription());
         }
         return v;
-    }
-
-    @Override
-    public void onRefresh() {
     }
 
     @Override

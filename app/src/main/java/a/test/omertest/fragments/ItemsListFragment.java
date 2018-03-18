@@ -1,10 +1,8 @@
 package a.test.omertest.fragments;
 
-import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,90 +12,69 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.List;
+
 import a.test.omertest.FeedPresenter;
 import a.test.omertest.IPresenter;
 import a.test.omertest.IView;
 import a.test.omertest.R;
 import a.test.omertest.adapters.ItemsListAdapter;
-import a.test.omertest.model.FeedItem;
+import a.test.omertest.model.AppDatabase;
+import a.test.omertest.model.RoomItem;
 import a.test.omertest.support.AndroidResolver;
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
 
 public class ItemsListFragment extends Fragment implements IView, SwipeRefreshLayout.OnRefreshListener {
 
-    private Context mContext;
     private IPresenter feedPresenter;
-    private RecyclerView mRecyclerView;
-    private RealmResults<FeedItem> items;
-
-    public ItemsListFragment() {
-    }
+    private ItemsListAdapter adapter;
 
     public static ItemsListFragment newInstance() {
         return new ItemsListFragment();
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        onAttachToContext(context);
-        this.mContext = context;
-    }
-
-    /* Deprecated on API 23
-     * Use onAttachToContext instead */
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            onAttachToContext(activity);
-        }
-    }
-
-    protected void onAttachToContext(Context context) {
-        this.mContext = context;
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Realm.init(getActivity());
-        Realm.setDefaultConfiguration(new RealmConfiguration.Builder().build());
-
+        AppDatabase db = AppDatabase.getDatabase(getActivity());
         feedPresenter = new FeedPresenter(
-                Realm.getDefaultInstance(),
+                db,
                 new AndroidResolver(getActivity()));
-        feedPresenter.attachView(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_items_list, container, false);
-        mRecyclerView = v.findViewById(R.id.mRVItemsList);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+        RecyclerView recyclerView = v.findViewById(R.id.rvItemsList);
+        recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        adapter = new ItemsListAdapter(feedPresenter);
+        recyclerView.setAdapter(adapter);
         return v;
     }
 
     @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        feedPresenter.attachView(this);
+    }
+
+
+    @Override
     public void onResume() {
         super.onResume();
-        if (items != null && items.size() > 0) showItems(items);
     }
 
     @Override
-    public void showItems(RealmResults<FeedItem> items) {
-        this.items = items;
-        ItemsListAdapter listAdapter = new ItemsListAdapter(
-                mContext,
-                items,
-                feedPresenter);
-        mRecyclerView.setAdapter(listAdapter);
+    public void onDestroyView() {
+        feedPresenter.detachView();
+        super.onDestroyView();
+    }
+
+    @Override
+    public void showItems(List<RoomItem> items) {
+        adapter.addItems(items);
     }
 
     @Override
@@ -110,13 +87,13 @@ public class ItemsListFragment extends Fragment implements IView, SwipeRefreshLa
     }
 
     @Override
-    public void showErrorToast() {
-        Toast.makeText(mContext, "Network Error", Toast.LENGTH_LONG).show();
+    public void showNetworkErrorToast() {
+        Toast.makeText(getActivity(), "Network is not available", Toast.LENGTH_LONG).show();
     }
 
     @Override
-    public void showCommonErrorToast() {
-        Toast.makeText(mContext, "Common Error", Toast.LENGTH_LONG).show();
+    public void showCommonErrorToast(String log) {
+        Toast.makeText(getActivity(), "Error: " + log, Toast.LENGTH_LONG).show();
     }
 
     @Override

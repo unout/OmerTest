@@ -4,7 +4,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import a.test.omertest.R;
-import a.test.omertest.model.FeedItem;
+import a.test.omertest.model.RoomItem;
 
 public class ItemViewHolder extends com.thoughtbot.expandablerecyclerview.viewholders.ChildViewHolder {
     private TextView pubDate;
@@ -20,7 +20,7 @@ public class ItemViewHolder extends com.thoughtbot.expandablerecyclerview.viewho
         description = itemView.findViewById(R.id.tvDescription);
     }
 
-    public void setHolder(FeedItem item) {
+    public void setHolder(RoomItem item) {
         pubDate.setText(item.getPubDate());
         title.setText(item.getTitle());
         if (description != null) {

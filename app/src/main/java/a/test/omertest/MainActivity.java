@@ -16,16 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void init() {
         getFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new ItemsListFragment())
+                .add(R.id.fragment_container, ItemsListFragment.newInstance())
                 .commit();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() >= 0) {
-            getFragmentManager().popBackStack();
-        } else {
-            super.onBackPressed();
-        }
     }
 }

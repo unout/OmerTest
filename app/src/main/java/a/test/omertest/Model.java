@@ -1,43 +1,38 @@
 package a.test.omertest;
 
 
+import android.util.Log;
+
+import java.util.List;
+
+import a.test.omertest.model.AppDatabase;
 import a.test.omertest.model.Feed;
 import a.test.omertest.model.FeedItem;
-import io.realm.Realm;
-import io.realm.RealmResults;
+import a.test.omertest.model.RoomItem;
 import retrofit2.Response;
 
 public class Model implements IModel {
 
-    private Realm realm;
+    private AppDatabase db;
     private FeedPresenter.Resolver resolver;
 
-    public Model(Realm realm, FeedPresenter.Resolver resolver) {
-        this.realm = realm;
+    public Model(AppDatabase db, FeedPresenter.Resolver resolver) {
+        this.db = db;
         this.resolver = resolver;
     }
 
     @Override
-    public RealmResults<FeedItem> getItems() {
-        return Realm.getDefaultInstance().where(FeedItem.class).findAll();
-    }
-
-    @Override
-    public void clear() {
-        realm.beginTransaction();
-        realm.deleteAll();
-        realm.commitTransaction();
+    public List<RoomItem> getItems() {
+        return db.itemDAO().getAll();
     }
 
     @Override
     public void saveFeed(Response<Feed> feedResponse) {
-        try {
-            realm.beginTransaction();
-            realm.deleteAll();
-            realm.insert(feedResponse.body().getChannel());
-            realm.commitTransaction();
-        } finally {
-            realm.close();
+        if (feedResponse.body() != null) {
+            for (FeedItem fi : feedResponse.body().getChannel().getFeedItems()) {
+                db.itemDAO().insert(new RoomItem(fi));
+                Log.e("Title  :  ", fi.getTitle());
+            }
         }
     }
 

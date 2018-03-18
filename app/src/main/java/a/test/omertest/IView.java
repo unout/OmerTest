@@ -1,15 +1,16 @@
 package a.test.omertest;
 
-import a.test.omertest.model.FeedItem;
-import io.realm.RealmResults;
+import java.util.List;
+
+import a.test.omertest.model.RoomItem;
 
 public interface IView {
 
-    void showItems(RealmResults<FeedItem> items);
+    void showItems(List<RoomItem> items);
 
     void openItem(int position);
 
-    void showErrorToast();
+    void showNetworkErrorToast();
 
-    void showCommonErrorToast();
+    void showCommonErrorToast(String log);
 }
